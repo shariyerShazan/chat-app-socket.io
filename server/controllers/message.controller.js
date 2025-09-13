@@ -27,7 +27,7 @@ export const getOtherUser = async (req , res)=>{
 
 export const getMessage = async (req , res)=>{
     try {
-         const {userToChatId} = req.body
+         const {userToChatId} = req.params
          const userToChat = await User.findById(userToChatId)
          if(!userToChat){
             return res.status(404).json({

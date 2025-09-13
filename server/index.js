@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser"
 import cors from "cors"
 import connectDB from "./utils/connectDB.js"
 import userRoutes from "./routes/user.route.js"
+import messageRoutes from "./routes/message.route.js"
 
 const app = express()
 
@@ -36,7 +37,7 @@ app.get("/" , (_ , res)=>{
 })
 // api's
 app.use("/api/users" , userRoutes)
-
+app.use("/api/messages" , messageRoutes)
 
 // servers
 const PORT = process.env.PORT || 7005
