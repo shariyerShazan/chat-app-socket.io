@@ -1,15 +1,34 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
+import { Link, useNavigate } from "react-router";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { USER_API_ENDPOINT } from "../utils/apiEndpoints";
 
 const Login = () => {
+    const navigate = useNavigate()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+    const formData = new FormData()
+    formData.append("email" , email)
+    formData.append("password" , password)
+
     e.preventDefault();
-    console.log({ email, password });
+    try {
+        const res = await axios.post(`${USER_API_ENDPOINT}/login` , {formData} , {withCredentials : true})
+        if(res.data.success){
+            toast.success(res.data.message)
+            navigate("/")
+            e.target.reset()
+        }
+    } catch (error) {
+        console.log(error)
+        toast.error(error.response.data.message)
+    }
   };
 
   return (
@@ -29,8 +48,8 @@ const Login = () => {
           <div className="relative w-full">
             <fieldset className="border border-gray-300 dark:border-gray-600 rounded-md focus-within:border-green-500 transition-colors duration-200">
               <legend
-                className={`px-1 text-gray-400 dark:text-gray-300 text-sm transition-all duration-200
-                  ${email ? "text-xs text-green-600 dark:text-blue-400" : "text-sm text-gray-400 dark:text-gray-300"} `}
+                className={`px-1 text-gray-400 dark:text-gray-300 font-bold text-lg transition-all duration-200
+                  ${email ? "text-xs font-normal text-green-600 dark:text-blue-400" : "text-sm text-gray-400 dark:text-gray-300"} `}
               >
                 Email
               </legend>
@@ -48,8 +67,8 @@ const Login = () => {
           <div className="relative w-full">
             <fieldset className="border border-gray-300 dark:border-gray-600 rounded-md focus-within:border-green-500 transition-colors duration-200">
               <legend
-                className={`px-1 text-gray-400 dark:text-gray-300 text-sm transition-all duration-200
-                  ${password ? "text-xs text-green-600 dark:text-blue-400" : "text-sm text-gray-400 dark:text-gray-300"} `}
+                className={`px-1 text-gray-400 dark:text-gray-300 text-lg font-bold transition-all duration-200
+                  ${password ? "text-xs font-normal text-green-600 dark:text-blue-400" : "text-sm text-gray-400 dark:text-gray-300"} `}
               >
                 Password
               </legend>
@@ -79,9 +98,9 @@ const Login = () => {
 
         <p className="mt-5 text-center text-sm text-gray-500 dark:text-gray-300">
           Don't have an account?{" "}
-          <a href="/register" className="text-green-600 dark:text-blue-400 font-bold">
+          <Link  to="/register" className="text-green-600 dark:text-blue-400 font-bold">
             Register
-          </a>
+          </Link>
         </p>
       </motion.div>
     </div>

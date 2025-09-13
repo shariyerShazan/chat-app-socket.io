@@ -1,16 +1,37 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
+import { Link, useNavigate } from "react-router";
+import axios from "axios";
+import { USER_API_ENDPOINT } from "../utils/apiEndpoints";
+import { toast } from "react-toastify";
 
 const Register = () => {
+    const navigate = useNavigate()
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ fullName, email, password });
+    const formData = new FormData()
+    formData.append("email" , email)
+    formData.append("fullName" , fullName)
+    formData.append("password" , password)
+
+    e.preventDefault();
+    try {
+        const res = await axios.post(`${USER_API_ENDPOINT}/register` , {formData} , {withCredentials : true})
+        if(res.data.success){
+            toast.success(res.data.message)
+            navigate("/")
+            e.target.reset()
+        }
+    } catch (error) {
+        console.log(error)
+        toast.error(error.response.data.message)
+    }
   };
 
   return (
@@ -99,9 +120,9 @@ const Register = () => {
 
         <p className="mt-5 text-center text-sm text-gray-500 dark:text-gray-300">
           Already have an account?{" "}
-          <a href="/login" className="text-purple-600 dark:text-pink-400 font-bold">
+          <Link to="/login" className="text-purple-600 dark:text-pink-400 font-bold">
             Login
-          </a>
+          </Link>
         </p>
       </motion.div>
     </div>
