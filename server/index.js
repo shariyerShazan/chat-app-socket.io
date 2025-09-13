@@ -4,6 +4,7 @@ dotenv.config()
 import cookieParser from "cookie-parser"
 import cors from "cors"
 import connectDB from "./utils/connectDB.js"
+import userRoutes from "./routes/user.route.js"
 
 const app = express()
 
@@ -34,6 +35,7 @@ app.get("/" , (_ , res)=>{
     }
 })
 // api's
+app.use("/api/users" , userRoutes)
 
 
 // servers
