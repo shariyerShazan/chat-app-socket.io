@@ -1,5 +1,6 @@
 import { Message } from "../models/message.model.js"
 import { User } from "../models/user.model.js"
+import { uploadPhoto } from "../utils/cloudinary"
 
 export const getOtherUser = async (req , res)=>{
     try {
@@ -60,3 +61,58 @@ export const getMessage = async (req , res)=>{
         })
     }
 }
+
+
+
+export const sendMessage = async (req, res) => {
+    try {
+      const { text } = req.body;
+      const { userToChatId } = req.params;
+      const file = req.file; 
+  
+      if (!text && !file) {
+        return res.status(400).json({
+          message: "Message or image is required",
+          success: false,
+        });
+      }
+  
+      const receiver = await User.findById(userToChatId);
+      if (!receiver) {
+        return res.status(404).json({
+          message: "Receiver not found",
+          success: false,
+        });
+      }
+  
+      let imageUrl = null;
+      let imagePublicId = null;
+  
+      if (file) {
+        const result = await uploadPhoto(file.buffer, "chat_images");
+        imageUrl = result.secure_url;
+        imagePublicId = result.public_id;
+      }
+  
+      const message = await Message.create({
+        senderId: req.userId,
+        reciverId: userToChatId,
+        text: text || "",
+        image: imageUrl,
+        imagePublicId: imagePublicId,
+        createdAt: new Date(),
+      });
+  
+      return res.status(200).json({
+        message: "Message sent successfully",
+        success: true,
+        data: message,
+      });
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({
+        message: "Internal server error",
+        success: false,
+      });
+    }
+  };
