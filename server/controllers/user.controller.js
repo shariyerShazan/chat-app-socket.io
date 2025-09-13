@@ -2,6 +2,7 @@ import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { deletePhoto, uploadPhoto } from "../utils/cloudinary.js";
 dotenv.config();
 
 export const register = async (req, res) => {
@@ -142,3 +143,92 @@ export const logout = async (_, res) => {
     });
   }
 };
+
+
+
+export const updateProfile = async (req, res) => {
+    try {
+      const { fullName, oldPassword, newPassword } = req.body;
+      const user = await User.findById(req.userId); 
+      const file = req.file;
+  
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found",
+          success: false,
+        });
+      }
+  
+      if (fullName) {
+        user.fullName = fullName;
+      }
+      if (newPassword) {
+        if (!oldPassword) {
+          return res.status(400).json({
+            message: "Old password is required to set new password",
+            success: false,
+          });
+        }
+  
+        if (newPassword.length < 6) {
+          return res.status(400).json({
+            message: "Password must be at least 6 characters",
+            success: false,
+          });
+        }
+        if (!/[a-zA-Z]/.test(newPassword)) {
+          return res.status(400).json({
+            message: "Password must contain at least one letter",
+            success: false,
+          });
+        }
+        if (!/[0-9]/.test(newPassword)) {
+          return res.status(400).json({
+            message: "Password must contain at least one number",
+            success: false,
+          });
+        }
+  
+        // Verify old password
+        const verifyPass = await bcrypt.compare(oldPassword, user.password);
+        if (!verifyPass) {
+          return res.status(400).json({
+            message: "Old password is incorrect",
+            success: false,
+          });
+        }
+  
+        const hashPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashPassword;
+      }
+  
+      if (file) {
+        if (user.profilePhotoPublicId) {
+          await deletePhoto(user.profilePhotoPublicId);
+        }
+  
+        // Upload new photo
+        const result = await uploadPhoto(file.buffer, "profile_photos");
+  
+        user.profilePhoto = result.secure_url;
+        user.profilePhotoPublicId = result.public_id;
+      }
+  
+      await user.save();
+
+      const { password, ...safeUser } = user.toObject();
+  
+      return res.status(200).json({
+        message: "Profile updated successfully",
+        success: true,
+        user: safeUser,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        message: "Internal server error",
+        success: false,
+      });
+    }
+  };
+  

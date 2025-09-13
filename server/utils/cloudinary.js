@@ -21,16 +21,8 @@ export const uploadPhoto = (filePathOrUrl, folder = "photos") => {
     });
   };
   
-  export const deletePhoto = async (photoUrlOrPublicId) => {
+  export const deletePhoto = async (publicId) => {
     try {
-      let publicId = photoUrlOrPublicId;
-  
-      if (photoUrlOrPublicId.startsWith("http")) {
-        const parts = photoUrlOrPublicId.split("/");
-        const fileWithExt = parts[parts.length - 1]; 
-        publicId = fileWithExt.substring(0, fileWithExt.lastIndexOf(".")); 
-      }
-  
       const result = await cloudinary.uploader.destroy(publicId);
       return result; 
     } catch (err) {
