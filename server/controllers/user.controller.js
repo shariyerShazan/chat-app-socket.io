@@ -1,5 +1,8 @@
 import { User } from "../models/user.model"
 import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
+import dotenv from "dotenv"
+dotenv.config()
 
 export const register = async (req , res)=>{
     try {
@@ -43,6 +46,43 @@ export const register = async (req , res)=>{
         })
         return res.status(200).json({
             message : "User register successfully",
+            success: true
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            message : "Internal server error" ,
+            success: false
+        })
+    }
+}
+
+export const login = async (req , res)=>{
+    try {
+        const {email , password} = req.body
+        if(!email || !password){
+            return res.status(404).json({
+                message : "Someting is missing." ,
+                success: false
+            })
+        } 
+        const user = await User.findOne({email})
+        if(!user){
+            return res.status(404).json({
+                message : "User not found with this email" ,
+                success: false
+            })
+        }
+        const correctPass = await bcrypt.compare(password , user.password)
+        if(!correctPass){
+            return res.status(404).json({
+                message : "Password is incorrect" ,
+                success: false
+            })
+        }
+        const token =  jwt.sign({userId : user._id} , process.env.JWT_SECRET_KEY , {expiresIn: "3d"})
+        return res.status(200).cookie("token" , token , {maxAge: 3*24*60*60*100 , sameSite: true , }).json({
+            message: `Welcome back ${user.fullName}`,
             success: true
         })
     } catch (error) {
