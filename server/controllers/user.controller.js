@@ -81,7 +81,12 @@ export const login = async (req , res)=>{
             })
         }
         const token =  jwt.sign({userId : user._id} , process.env.JWT_SECRET_KEY , {expiresIn: "3d"})
-        return res.status(200).cookie("token" , token , {maxAge: 3*24*60*60*100 , sameSite: true , }).json({
+        return res.status(200).cookie("token" , token , { 
+            httpOnly: true,        
+            secure: true, 
+            sameSite: "strict",
+            maxAge: 3 * 24 * 60 * 60 * 1000, 
+        }).json({
             message: `Welcome back ${user.fullName}`,
             success: true
         })
@@ -93,3 +98,28 @@ export const login = async (req , res)=>{
         })
     }
 }
+
+
+
+export const logout = async (_, res) => {
+    try {
+      return res
+        .status(200)
+        .cookie("token", "", {
+          httpOnly: true,
+          secure: true,
+          sameSite: "strict",
+          expires: new Date(0), 
+        })
+        .json({
+          message: "Logged out successfully",
+          success: true,
+        });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        message: "Internal server error",
+        success: false,
+      });
+    }
+  };
