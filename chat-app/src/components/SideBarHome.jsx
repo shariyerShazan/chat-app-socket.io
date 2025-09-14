@@ -15,10 +15,10 @@ const SideBarHome = () => {
   const skeletonArray = Array(5).fill(0);
 
   return (
-    <div className="w-72 h-screen shadow-xl bg-white dark:bg-gray-900 flex flex-col">
+    <div className="w-72 h-[93vh] shadow-xl bg-white dark:bg-gray-900 flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b-2 dark:border-gray-700 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
+      <div className="py-6.5 shadow-sm  dark:border-gray-700 flex items-center justify-center">
+        <h2 className="text-xl text-center font-bold text-gray-800 dark:text-gray-200">
           Chats
         </h2>
       </div>

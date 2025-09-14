@@ -1,69 +1,71 @@
-import axios from 'axios'
-import React, { useEffect, useState, useRef } from 'react'
-import { useParams } from 'react-router'
-import { MESSAGE_API_ENDPOINT, USER_API_ENDPOINT } from '../utils/apiEndpoints'
-import ChatSkeleton from '../components/ChatSkeleton'
-
+import axios from "axios";
+import React, { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router";
+import { useSelector } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion";
+import { MESSAGE_API_ENDPOINT, USER_API_ENDPOINT } from "../utils/apiEndpoints";
+import ChatSkeleton from "../components/ChatSkeleton";
+import { RxCross2 } from "react-icons/rx";
 
 const Chats = () => {
-  const { reciverId } = useParams()
-  const [chatUser, setChatUser] = useState(null)
-  const [chats, setChats] = useState([])
-  const [text, setText] = useState('')
-  const [file, setFile] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const messagesEndRef = useRef(null)
+  const { reciverId } = useParams();
+  const { user } = useSelector((state) => state.user);
+  const [chatUser, setChatUser] = useState(null);
+  const [chats, setChats] = useState([]);
+  const [text, setText] = useState("");
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef(null);
 
-  // Scroll to bottom whenever chats change
+  // Scroll to bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [chats])
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chats]);
 
-  // Fetch chats
+  // Fetch chat user
   useEffect(() => {
-    const fetchChats = async () => {
-      setLoading(true)
-      try {
-        const res = await axios.get(
-          `${MESSAGE_API_ENDPOINT}/get-message/${reciverId}`,
-          { withCredentials: true }
-        )
-        if (res.data.success) setChats(res.data.chats)
-        else setChats([])
-      } catch (err) {
-        console.log(err)
-        setChats([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (reciverId) fetchChats()
-  }, [reciverId])
-
-  // Fetch chat user info
-  useEffect(() => {
+    if (!reciverId) return;
     const fetchChatUser = async () => {
       try {
         const res = await axios.get(`${USER_API_ENDPOINT}/user/${reciverId}`, {
           withCredentials: true,
-        })
-        if (res.data.success) setChatUser(res.data.user)
+        });
+        if (res.data.success) setChatUser(res.data.user);
       } catch (err) {
-        console.log(err)
+        console.log(err);
       }
-    }
+    };
+    fetchChatUser();
+  }, [reciverId]);
 
-    if (reciverId) fetchChatUser()
-  }, [reciverId])
+  // Fetch chats
+  useEffect(() => {
+    if (!reciverId) return;
+    const fetchChats = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get(
+          `${MESSAGE_API_ENDPOINT}/get-message/${reciverId}`,
+          { withCredentials: true }
+        );
+        if (res.data.success) setChats(res.data.chats);
+        else setChats([]);
+      } catch (err) {
+        console.log(err);
+        setChats([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchChats();
+  }, [reciverId]);
 
   // Send message
   const handleSend = async () => {
-    if (!text && !file) return
-
-    const formData = new FormData()
-    formData.append('text', text)
-    if (file) formData.append('image', file)
+    if (!text && !file) return;
+    const formData = new FormData();
+    formData.append("text", text);
+    if (file) formData.append("image", file);
 
     try {
       const res = await axios.post(
@@ -71,99 +73,146 @@ const Chats = () => {
         formData,
         {
           withCredentials: true,
-          headers: { 'Content-Type': 'multipart/form-data' },
+          headers: { "Content-Type": "multipart/form-data" },
         }
-      )
+      );
       if (res.data.success) {
-        setText('')
-        setFile(null)
-        setChats(prev => [...prev, res.data.data])
+        setText("");
+        setFile(null);
+        setChats((prev) => [...prev, res.data.data]);
       }
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
-  }
+  };
 
   return (
-    <div className="flex flex-col h-screen w-full mx-auto border rounded-lg shadow-lg">
+    <div className="flex flex-col h-[93vh] w-full mx-auto shadow-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
       {/* Header */}
-      <div className="p-4 bg-gray-100 border-b flex items-center">
-        <div className="avatar">
-          <div className="w-10 rounded-full">
-            <img src={chatUser?.profilePicture || '/default-avatar.png'} alt="User Avatar" />
+      <div className="p-4 flex items-center shadow-sm bg-white dark:bg-gray-800 transition-colors duration-300">
+        <div className="relative group">
+          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300 hover:border-blue-400 transition-all">
+            <img
+              src={chatUser?.profilePicture || "/default-avatar.png"}
+              alt="User Avatar"
+              className="w-full h-full object-cover"
+            />
           </div>
+          {chatUser && (
+            <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {chatUser?.fullName}
+            </span>
+          )}
         </div>
-        <h1 className="ml-3 font-semibold">{chatUser?.fullName || 'Loading...'}</h1>
+        <h1 className="ml-4 text-xl font-semibold opacity-0">
+          {/* Hide fullName by default */}
+          {chatUser?.fullName}
+        </h1>
       </div>
 
       {/* Chat messages */}
-      <div className="flex-1 p-4 overflow-y-auto bg-white space-y-2">
+      <div className="flex-1 p-4 overflow-y-auto space-y-3">
         {loading ? (
           <ChatSkeleton />
         ) : chats.length === 0 ? (
-          <p className="text-center text-gray-400 mt-10">Let's start talking!</p>
+          <p className="text-center text-gray-400 mt-10 italic">Let's start talking!</p>
         ) : (
-          chats.map((chat, index) => {
-            const isReceiver = chat.senderId._id === reciverId
-            const name = isReceiver ? chat.senderId.fullName : chat.reciverId.fullName
-            const avatar = isReceiver ? chat.senderId.profilePicture : chat.reciverId.profilePicture
+          <AnimatePresence initial={false}>
+            {chats.map((chat, index) => {
+              const isSender = chat.senderId._id === user._id;
+              const avatar = isSender
+                ? chat.senderId.profilePicture
+                : chat.reciverId.profilePicture;
 
-            return (
-              <div
-                key={index}
-                className={`flex ${isReceiver ? 'justify-start' : 'justify-end'}`}
-              >
-                <div className={`chat p-2 rounded-xl max-w-xs ${isReceiver ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}>
-                  <div className={`flex items-center ${isReceiver ? 'flex-row' : 'flex-row-reverse'} mb-1`}>
-                    <img src={avatar} alt="avatar" className="w-6 h-6 rounded-full" />
-                    <span className="text-sm font-semibold mx-2">{name}</span>
-                  </div>
-
-                  {chat.text && <div className="">{chat.text}</div>}
-                  {chat.image && (
-                    <div className="mt-2">
-                      <img src={chat.image} alt="chat" className="max-w-full rounded-lg" />
+              return (
+                <motion.div
+                  key={chat._id || index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.3 }}
+                  className={`flex ${isSender ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`relative max-w-xs p-3 rounded-xl shadow-md transition transform hover:scale-105 flex items-start ${
+                      isSender
+                        ? "bg-blue-500 text-white flex-row-reverse gap-3"
+                        : "bg-gray-200 dark:bg-gray-700 dark:text-white text-black"
+                    }`}
+                  >
+                    {/* Profile picture */}
+                    <div className={`relative group flex-shrink-0 mr-2`}>
+                      <img
+                        src={avatar}
+                        alt="avatar"
+                        className="w-8 h-8 rounded-full border-2 border-gray-300 group-hover:border-blue-400 transition-all"
+                      />
+                      <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-black text-white text-xs rounded px-1 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        {isSender ? chat.senderId.fullName : chat.reciverId.fullName}
+                      </span>
                     </div>
-                  )}
-                </div>
-              </div>
-            )
-          })
+
+                    {/* Message content */}
+                    <div className="text-lg break-words">
+                      {chat.text && <div>{chat.text}</div>}
+                      {chat.image && (
+                        <div className="mt-2">
+                          <img
+                            src={chat.image}
+                            alt="chat"
+                            className="max-w-full rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area */}
-      <div className="p-4 border-t bg-gray-50 flex items-center gap-2">
+      {/* Input */}
+      <div className="p-4 border-t flex items-center gap-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 transition-colors duration-300">
         {file && (
           <div className="relative">
-            <img src={URL.createObjectURL(file)} alt="preview" className="w-20 h-20 object-cover rounded-md" />
+            <img
+              src={URL.createObjectURL(file)}
+              alt="preview"
+              className="w-20 h-20 object-cover rounded-md border-2 border-gray-300"
+            />
             <button
               onClick={() => setFile(null)}
-              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+              className="absolute -top-2 -right-2 cursor-pointer bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow"
             >
-              x
+              <RxCross2 />
             </button>
           </div>
         )}
         <input
           type="text"
           placeholder="Type a message..."
-          className="input input-bordered flex-1 focus:ring-0"
+          className="input input-bordered flex-1 focus:ring-0 focus:outline-none border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           value={text}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSend();
+          }}
           onChange={(e) => setText(e.target.value)}
         />
         <input
           type="file"
+          accept="image/*"
           className="file-input file-input-bordered"
           onChange={(e) => setFile(e.target.files[0])}
         />
-        <button className="btn btn-primary" onClick={handleSend}>
+        <button className="btn btn-primary px-4 py-2" onClick={handleSend}>
           Send
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Chats
+export default Chats;

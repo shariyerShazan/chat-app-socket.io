@@ -1,12 +1,13 @@
-import express from "express"
-import { isAuthenticated } from "../middlewares/isAuthenticated.js"
-import { getMessage, getOtherUser, sendMessage } from "../controllers/message.controller.js"
-import { upload } from "../utils/multer.js"
+import express from "express";
+import { isAuthenticated } from "../middlewares/isAuthenticated.js";
+import { getMessage, getOtherUser, sendMessage } from "../controllers/message.controller.js";
+import { upload } from "../utils/multer.js";
 
-const route = express.Router()
+const router = express.Router();
 
-route.post("/send-message/:userToChatId" , isAuthenticated  , upload.single("image") ,  sendMessage)
-route.get("/get-message/:userToChatId" , isAuthenticated , getMessage)
-route.get("/other-users" , isAuthenticated , getOtherUser)
+// Routes
+router.post("/send-message/:reciverId", isAuthenticated, upload.single("image"), sendMessage);
+router.get("/get-message/:reciverId", isAuthenticated, getMessage);
+router.get("/other-users", isAuthenticated, getOtherUser);
 
-export default route 
+export default router;
