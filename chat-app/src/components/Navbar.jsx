@@ -41,7 +41,7 @@ const Navbar = () => {
     }
   }
   return (
-    <nav className="bg-white dark:bg-gray-950   shadow-lg px-6 py-3 flex justify-between items-center">
+    <nav className="bg-white dark:bg-gray-950 border-b-2 border-b-[#9810fa]  shadow-lg px-6 py-3 flex justify-between items-center">
       {/* Left: Website Name */}
       <div className="text-2xl font-bold text-purple-600  dark:text-pink-400">
         Chatty

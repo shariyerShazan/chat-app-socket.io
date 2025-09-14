@@ -111,7 +111,7 @@ const Chats = () => {
       </div>
 
       {/* Chat messages */}
-      <div className="flex-1 p-4 overflow-y-auto space-y-3">
+      <div className="flex-1  p-4 overflow-y-auto space-y-3">
         {loading ? (
           <ChatSkeleton />
         ) : chats.length === 0 ? (
@@ -134,9 +134,9 @@ const Chats = () => {
                   className={`flex ${isSender ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`relative max-w-xs p-3 rounded-xl shadow-md transition transform hover:scale-105 flex items-start ${
+                    className={`relative max-w-xs p-3 rounded-xl shadow-md transition transform hover:scale-105 flex items-center gap-3 ${
                       isSender
-                        ? "bg-blue-500 text-white flex-row-reverse gap-3"
+                        ? "bg-blue-500 text-white flex-row-reverse gap-3 "
                         : "bg-gray-200 dark:bg-gray-700 dark:text-white text-black"
                     }`}
                   >
@@ -150,21 +150,46 @@ const Chats = () => {
                       <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-black text-white text-xs rounded px-1 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                         {isSender ? chat.senderId.fullName : chat.reciverId.fullName}
                       </span>
+                     
                     </div>
+                    
 
                     {/* Message content */}
-                    <div className="text-lg break-words">
-                      {chat.text && <div>{chat.text}</div>}
-                      {chat.image && (
-                        <div className="mt-2">
-                          <img
-                            src={chat.image}
-                            alt="chat"
-                            className="max-w-full rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                          />
-                        </div>
-                      )}
-                    </div>
+                    <div className="text-lg break-words group relative p-1">
+  {/* Message text */}
+  {chat.text && (
+    <div className={`${isSender ? "text-white" : "text-gray-900 dark:text-gray-100"}`}>
+      {chat.text}
+    </div>
+  )}
+
+  {/* Message image */}
+  {chat.image && (
+    <div className="mt-2">
+      <img
+        src={chat.image}
+        alt="chat"
+        className="max-w-full rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+      />
+    </div>
+  )}
+
+  {/* Timestamp: always safe visible on bottom-right corner */}
+  <span
+    className={`
+      absolute -bottom-10  text-xs px-1 py-[1px] rounded 
+      ${isSender 
+        ? "bg-gray-950 text-white dark:bg-white dark:text-black left-0" 
+        : "bg-gray-950 text-white dark:bg-white dark:text-black right-0"}
+      opacity-0 group-hover:opacity-100 transition-opacity duration-200
+    `}
+  >
+    {new Date(chat.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+  </span>
+</div>
+
+
+                    
                   </div>
                 </motion.div>
               );
