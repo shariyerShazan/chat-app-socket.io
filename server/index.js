@@ -10,11 +10,11 @@ import messageRoutes from "./routes/message.route.js"
 const app = express()
 
 // middlewares
-app.use(cookieParser)
+app.use(cookieParser())
 app.use(express.urlencoded({extended: true}))
 app.use(express.json())
 app.use(cors({
-    origin:[ "https://localhost:5173"] ,
+    origin:[ "http://localhost:5173" , "http://localhost:5174"] ,
     credentials: true
 }))
 
@@ -34,21 +34,21 @@ app.get("/" , (_ , res)=>{
             success: false
         })
     }
-})
+}) 
 // api's
 app.use("/api/users" , userRoutes)
 app.use("/api/messages" , messageRoutes)
 
 // servers
-const PORT = process.env.PORT || 7005
+const PORT = process.env.PORT || 6002
 const runServer = async ()=>{
      try {
         await connectDB()
         app.listen(PORT , ()=>{
-            console.log(`Your server is running at https://localhost:${PORT}`)
+            console.log(`Your server is running at http://localhost:${PORT}`)
         })
      } catch (error) {
         console.log(error)
      }
 }
-runServer()
+runServer()  

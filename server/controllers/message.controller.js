@@ -1,6 +1,6 @@
 import { Message } from "../models/message.model.js"
 import { User } from "../models/user.model.js"
-import { uploadPhoto } from "../utils/cloudinary"
+import { uploadPhoto } from "../utils/cloudinary.js"
 
 export const getOtherUser = async (req , res)=>{
     try {
@@ -13,7 +13,8 @@ export const getOtherUser = async (req , res)=>{
         }
         return res.status(200).json({
             message : "Other users here",
-            success: true
+            success: true ,
+            otherUsers
         })
     } catch (error) {
         console.log(error)
@@ -51,7 +52,7 @@ export const getMessage = async (req , res)=>{
          return res.status(200).json({
             message: "here is meessage" ,
             success: true ,
-            messages
+            chats:  messages
          })
     } catch (error) {
         console.log(error)
