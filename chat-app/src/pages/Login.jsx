@@ -7,25 +7,30 @@ import axios from "axios";
 import { USER_API_ENDPOINT } from "../utils/apiEndpoints";
 
 const Login = () => {
+    const [btnLoading , setBtnLoading] = useState(false)
     const navigate = useNavigate()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
-    const formData = new FormData()
-    formData.append("email" , email)
-    formData.append("password" , password)
+    setBtnLoading(true)
+    const formData = {
+        email,
+        password,
+      };
 
     e.preventDefault();
     try {
-        const res = await axios.post(`${USER_API_ENDPOINT}/login` , {formData} , {withCredentials : true})
+        const res = await axios.post(`${USER_API_ENDPOINT}/login` , formData , {withCredentials : true})
         if(res.data.success){
+            setBtnLoading(false)
             toast.success(res.data.message)
             navigate("/")
             e.target.reset()
         }
     } catch (error) {
+        setBtnLoading(false)
         console.log(error)
         toast.error(error.response.data.message)
     }
@@ -90,9 +95,12 @@ const Login = () => {
 
           <button
             type="submit"
-            className="btn btn-primary w-full text-white bg-gradient-to-r from-green-500 to-blue-500 hover:from-blue-500 hover:to-green-500"
+            disabled={btnLoading}
+            className={`btn btn-primary w-full text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-500 hover:to-purple-500 ${
+              btnLoading ? "opacity-70 cursor-not-allowed" : ""
+            }`}
           >
-            Login
+            {btnLoading ? "Logining..." : "Login"}
           </button>
         </form>
 

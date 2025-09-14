@@ -7,31 +7,43 @@ import { USER_API_ENDPOINT } from "../utils/apiEndpoints";
 import { toast } from "react-toastify";
 
 const Register = () => {
-    const navigate = useNavigate()
+  const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [btnLoading, setBtnLoading] = useState(false); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData()
-    formData.append("email" , email)
-    formData.append("fullName" , fullName)
-    formData.append("password" , password)
+    setBtnLoading(true); 
 
-    e.preventDefault();
+    const formData = {
+      email,
+      fullName,
+      password,
+    };
+
     try {
-        const res = await axios.post(`${USER_API_ENDPOINT}/register` , {formData} , {withCredentials : true})
-        if(res.data.success){
-            toast.success(res.data.message)
-            navigate("/")
-            e.target.reset()
-        }
+      const res = await axios.post(
+        `${USER_API_ENDPOINT}/register`,
+        formData,
+        { withCredentials: true }
+      );
+
+      if (res.data.success) {
+        setBtnLoading(false); 
+        toast.success(res.data.message);
+        navigate("/login");
+        e.target.reset();
+      }
     } catch (error) {
-        console.log(error)
-        toast.error(error.response.data.message)
-    }
+        setBtnLoading(false); 
+      console.log(error);
+      toast.error(error.response?.data?.message || "Something went wrong");
+    }  finally {
+        setBtnLoading(false);
+      }
   };
 
   return (
@@ -112,9 +124,12 @@ const Register = () => {
 
           <button
             type="submit"
-            className="btn btn-primary w-full text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-500 hover:to-purple-500"
+            disabled={btnLoading}
+            className={`btn btn-primary w-full text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-500 hover:to-purple-500 ${
+              btnLoading ? "opacity-70 cursor-not-allowed" : ""
+            }`}
           >
-            Register
+            {btnLoading ? "Registering..." : "Register"}
           </button>
         </form>
 
