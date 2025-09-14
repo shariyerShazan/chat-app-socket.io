@@ -2,6 +2,8 @@ import axios from 'axios'
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router'
 import { MESSAGE_API_ENDPOINT, USER_API_ENDPOINT } from '../utils/apiEndpoints'
+import ChatSkeleton from '../components/ChatSkeleton'
+
 
 const Chats = () => {
   const { reciverId } = useParams()
@@ -9,6 +11,7 @@ const Chats = () => {
   const [chats, setChats] = useState([])
   const [text, setText] = useState('')
   const [file, setFile] = useState(null)
+  const [loading, setLoading] = useState(false)
   const messagesEndRef = useRef(null)
 
   // Scroll to bottom whenever chats change
@@ -19,19 +22,19 @@ const Chats = () => {
   // Fetch chats
   useEffect(() => {
     const fetchChats = async () => {
+      setLoading(true)
       try {
         const res = await axios.get(
           `${MESSAGE_API_ENDPOINT}/get-message/${reciverId}`,
           { withCredentials: true }
         )
-        if (res.data.success) {
-          setChats(res.data.chats)
-        } else {
-          setChats([])
-        }
+        if (res.data.success) setChats(res.data.chats)
+        else setChats([])
       } catch (err) {
         console.log(err)
         setChats([])
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -74,7 +77,7 @@ const Chats = () => {
       if (res.data.success) {
         setText('')
         setFile(null)
-        setChats(prev => [...prev, res.data.data]) // নতুন মেসেজ যোগ করা
+        setChats(prev => [...prev, res.data.data])
       }
     } catch (err) {
       console.log(err)
@@ -94,8 +97,10 @@ const Chats = () => {
       </div>
 
       {/* Chat messages */}
-      <div className="flex-1 p-4 overflow-y-auto bg-white">
-        {chats.length === 0 ? (
+      <div className="flex-1 p-4 overflow-y-auto bg-white space-y-2">
+        {loading ? (
+          <ChatSkeleton />
+        ) : chats.length === 0 ? (
           <p className="text-center text-gray-400 mt-10">Let's start talking!</p>
         ) : (
           chats.map((chat, index) => {
@@ -106,24 +111,18 @@ const Chats = () => {
             return (
               <div
                 key={index}
-                className={`flex mb-2 ${isReceiver ? 'justify-start' : 'justify-end'}`}
+                className={`flex ${isReceiver ? 'justify-start' : 'justify-end'}`}
               >
-                <div className={`chat ${isReceiver ? 'chat-start' : 'chat-end'}`}>
-                  {/* Profile picture + name */}
-                  <div className={`flex items-center ${isReceiver ? 'flex-row' : 'flex-row-reverse'}`}>
-                    <img src={avatar} alt="avatar" className="w-8 h-8 rounded-full" />
-                    <span className={`text-sm font-semibold mx-2 ${isReceiver ? 'text-left' : 'text-right'}`}>
-                      {name}
-                    </span>
+                <div className={`chat p-2 rounded-xl max-w-xs ${isReceiver ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}>
+                  <div className={`flex items-center ${isReceiver ? 'flex-row' : 'flex-row-reverse'} mb-1`}>
+                    <img src={avatar} alt="avatar" className="w-6 h-6 rounded-full" />
+                    <span className="text-sm font-semibold mx-2">{name}</span>
                   </div>
 
-                  {/* Message bubble */}
-                  {chat.text && (
-                    <div className="chat-bubble mt-1">{chat.text}</div>
-                  )}
+                  {chat.text && <div className="">{chat.text}</div>}
                   {chat.image && (
-                    <div className="chat-bubble mt-1">
-                      <img src={chat.image} alt="chat" className="max-w-xs rounded-lg" />
+                    <div className="mt-2">
+                      <img src={chat.image} alt="chat" className="max-w-full rounded-lg" />
                     </div>
                   )}
                 </div>
@@ -136,10 +135,21 @@ const Chats = () => {
 
       {/* Input area */}
       <div className="p-4 border-t bg-gray-50 flex items-center gap-2">
+        {file && (
+          <div className="relative">
+            <img src={URL.createObjectURL(file)} alt="preview" className="w-20 h-20 object-cover rounded-md" />
+            <button
+              onClick={() => setFile(null)}
+              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+            >
+              x
+            </button>
+          </div>
+        )}
         <input
           type="text"
           placeholder="Type a message..."
-          className="input input-bordered flex-1"
+          className="input input-bordered flex-1 focus:ring-0"
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
