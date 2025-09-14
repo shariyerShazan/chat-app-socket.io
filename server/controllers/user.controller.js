@@ -235,3 +235,25 @@ export const updateProfile = async (req, res) => {
 
 
 
+  export const getUserById = async (req , res)=>{
+    try {
+      const {userId} = req.params
+      const user = await User.findById(userId)
+      if(!user){
+        return res.status(400).json({
+          message: "User not foundr",
+          success: false,
+        });
+      }
+      return res.status(200).json({
+        user ,
+        success: true
+      })
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        message: "Internal server error",
+        success: false,
+      });
+    }
+  }
