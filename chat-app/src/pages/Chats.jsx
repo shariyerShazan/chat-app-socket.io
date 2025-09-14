@@ -97,9 +97,10 @@ const Chats = () => {
               alt="User Avatar"
               className="w-full h-full object-cover"
             />
+            {/* <p>{chatUser?.fullName}</p> */}
           </div>
           {chatUser && (
-            <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="absolute bottom-1/5  translate-x-12 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
               {chatUser?.fullName}
             </span>
           )}
