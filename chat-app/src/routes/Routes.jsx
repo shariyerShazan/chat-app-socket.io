@@ -5,6 +5,7 @@ import HomePage from "../pages/HomePage";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Profile from "../pages/Profile";
+import Chats from "../pages/chats";
 
 export const Routes = createBrowserRouter([
     {
@@ -13,8 +14,14 @@ export const Routes = createBrowserRouter([
         errorElement :  <ErrorPage /> ,
         children : [
             {
-                index: true ,
-                 element: <HomePage />
+                path: "/" ,
+                 element: <HomePage />,
+                 children: [
+                    {
+                        path : "chats/:reciverId" ,
+                        element: <Chats />
+                    }
+                 ]
             },
             {
                 path : "login" ,

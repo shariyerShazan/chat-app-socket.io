@@ -1,9 +1,12 @@
 import React from 'react'
+import SideBarHome from '../components/SideBarHome'
+import { Outlet } from 'react-router'
 
 const HomePage = () => {
   return (
     <div>
-      
+      <SideBarHome />
+        <Outlet />
     </div>
   )
 }
