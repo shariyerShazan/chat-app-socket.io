@@ -37,7 +37,7 @@ const Login = () => {
   
         // socket connect
         socket.connect();
-        socket.emit("join", res.data.user._id); 
+        socket.emit("user-joined", res.data.user._id);
   
         navigate("/");
         e.target.reset();
