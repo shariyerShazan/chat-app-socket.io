@@ -20,7 +20,7 @@ export const getOtherUser = async (req , res)=>{
         console.log(error)
         return res.status(500).json({
             message : "Internal server error" ,
-            success: fales
+            success: false
         })
     }
 }
@@ -58,7 +58,7 @@ export const getMessage = async (req , res)=>{
         console.log(error)
         return res.status(500).json({
             message : "Internal server error" ,
-            success: fales
+            success: false
         })
     }
 }

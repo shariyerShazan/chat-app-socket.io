@@ -4,7 +4,7 @@ import { Outlet } from 'react-router'
 
 const HomePage = () => {
   return (
-    <div>
+    <div className='flex gap-5'>
       <SideBarHome />
         <Outlet />
     </div>

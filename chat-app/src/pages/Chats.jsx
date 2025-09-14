@@ -1,113 +1,130 @@
-import React, { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
-import { MESSAGE_API_ENDPOINT } from "../utils/apiEndpoints";
-import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
-import { useGetChats } from "../hooks/useGetChats";
+import axios from 'axios'
+import React, { useEffect, useState, useRef } from 'react'
+import { useParams } from 'react-router'
+import { useSelector } from 'react-redux'
+import { useGetChats } from '../hooks/useGetChats'
+import { MESSAGE_API_ENDPOINT, USER_API_ENDPOINT } from '../utils/apiEndpoints'
 
 const Chats = () => {
-  const { reciverId } = useParams();
-  const {chats} = useSelector((state)=>state.chat)
-  const [text, setText] = useState("");
-  const [image, setImage] = useState(null);
+  const { reciverId } = useParams()
+  const [chatUser, setChatUser] = useState(null)
+  const [text, setText] = useState('')
+  const [file, setFile] = useState(null)
+  const messagesEndRef = useRef(null)
 
+  const { chats } = useSelector((state) => state.chat)
+  const { refetchChats, loading, error } = useGetChats(reciverId)
 
-  const chatEndRef = useRef(null);
+  // Scroll to bottom whenever chats change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chats])
 
-  // scroll to bottom
-  const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  useEffect(() => {
+    refetchChats()
+  }, [reciverId])
 
-  const {refetchChats, loading, error} = useGetChats()
+  const fetchChatUser = async () => {
+    try {
+      const res = await axios.get(`${USER_API_ENDPOINT}/user/${reciverId}`, {
+        withCredentials: true,
+      })
+      if (res.data.success) {
+        setChatUser(res.data.user)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
- 
+  useEffect(() => {
+    fetchChatUser()
+  }, [reciverId])
 
   const handleSend = async () => {
-    if (!text && !image) return;
+    if (!text && !file) return // যদি কিছু না থাকে তাহলে send না হবে
 
-    setLoading(true);
+    const formData = new FormData()
+    formData.append('text', text)
+    if (file) formData.append('file', file)
+
     try {
-      const formData = new FormData();
-      formData.append("text", text);
-      if (image) formData.append("file", image);
-
-      const res = await axios.post(`${MESSAGE_API_ENDPOINT}/send-message/${reciverId}`, formData, {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
+      const res = await axios.post(
+        `${MESSAGE_API_ENDPOINT}/send-message/${reciverId}`,
+        formData,
+        {
+          withCredentials: true,
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }
+      )
       if (res.data.success) {
-        setMessages((prev) => [...prev, res.data.data]);
-        setText("");
-        setImage(null);
-        scrollToBottom();
+        setText('')
+        setFile(null)
+        refetchChats()
       }
-    } catch (err) {
-      console.log(err);
-      toast.error("Failed to send message");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.log(error)
     }
-  };
-
+  }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex flex-col h-screen w-full mx-auto border rounded-lg shadow-lg">
       {/* Header */}
-      {userToChat && (
-        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-300">
-              <img src={userToChat.profilePicture || "/default-avatar.png"} alt={userToChat.fullName} className="w-full h-full object-cover" />
-              {userToChat.isActive && <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></span>}
-            </div>
-            <div>
-              <p className="font-semibold text-gray-800 dark:text-gray-200">{userToChat.fullName}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{userToChat.email}</p>
-            </div>
+      <div className="p-4 bg-gray-100 border-b flex items-center">
+        <div className="avatar">
+          <div className="w-10 rounded-full">
+            <img src={chatUser?.profilePicture || '/default-avatar.png'} alt="User Avatar" />
           </div>
         </div>
-      )}
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {chats.map((msg) => (
-          <div
-            key={msg._id}
-            className={`flex ${msg.senderId === userToChat?._id ? "justify-start" : "justify-end"}`}
-          >
-            <div className={`p-3 rounded-lg max-w-xs ${msg.senderId === userToChat?._id ? "bg-white dark:bg-gray-800" : "bg-purple-500 text-white"}`}>
-              {msg.text && <p>{msg.text}</p>}
-              {msg.image && <img src={msg.image} alt="sent" className="mt-2 rounded-lg" />}
-              <p className="text-xs text-gray-400 mt-1">{new Date(msg.createdAt).toLocaleTimeString()}</p>
-            </div>
-          </div>
-        ))}
-        <div ref={chatEndRef}></div>
+        <h1 className="ml-3 font-semibold">{chatUser?.fullName || 'Loading...'}</h1>
       </div>
 
-      {/* Send Message */}
-      <div className="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex gap-2">
+      {/* Chat messages */}
+      <div className="flex-1 p-4 overflow-y-auto bg-white">
+        {chats?.length === 0 ? (
+          <p className="text-center text-gray-400 mt-10">Let's start talking!</p>
+        ) : (
+          chats?.map((chat, index) => (
+            <div
+              key={index}
+              className={`flex mb-2 ${
+                chat.senderId === reciverId ? 'justify-start' : 'justify-end'
+              }`}
+            >
+              <div className={`chat ${chat.senderId === reciverId ? 'chat-start' : 'chat-end'}`}>
+                {chat.type === 'text' && <div className="chat-bubble">{chat.message}</div>}
+                {chat.type === 'image' && (
+                  <div className="chat-bubble">
+                    <img src={chat.message} alt="chat" className="max-w-xs rounded-lg" />
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input area */}
+      <div className="p-4 border-t bg-gray-50 flex items-center gap-2">
         <input
           type="text"
-          placeholder="Type your message..."
+          placeholder="Type a message..."
+          className="input input-bordered flex-1"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="flex-1 input input-bordered"
         />
-        <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} className="file-input file-input-bordered" />
-        <button
-          onClick={handleSend}
-          disabled={!text && !image || loading}
-          className={`btn btn-primary ${!text && !image ? "btn-disabled" : ""}`}
-        >
-          {loading ? "Sending..." : "Send"}
+        <input
+          type="file"
+          className="file-input file-input-bordered"
+          onChange={(e) => setFile(e.target.files[0])}
+        />
+        <button className="btn btn-primary" onClick={handleSend}>
+          Send
         </button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Chats;
+export default Chats
