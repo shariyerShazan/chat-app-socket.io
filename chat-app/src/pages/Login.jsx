@@ -5,8 +5,11 @@ import { Link, useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { USER_API_ENDPOINT } from "../utils/apiEndpoints";
+import { useDispatch } from "react-redux";
+import { setUser } from "../redux/userSlice";
 
 const Login = () => {
+    const dispatch = useDispatch()
     const [btnLoading , setBtnLoading] = useState(false)
     const navigate = useNavigate()
   const [email, setEmail] = useState("");
@@ -26,6 +29,7 @@ const Login = () => {
         if(res.data.success){
             setBtnLoading(false)
             toast.success(res.data.message)
+            dispatch(setUser(res.data.user))
             navigate("/")
             e.target.reset()
         }

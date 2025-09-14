@@ -1,7 +1,15 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router";
+import { USER_API_ENDPOINT } from "../utils/apiEndpoints";
+import { toast } from "react-toastify";
+import { setUser } from "../redux/userSlice";
 
 const Navbar = () => {
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
+    const {user} = useSelector((state)=> state.user)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(
     localStorage.getItem("darkMode") === "true" || false
@@ -19,6 +27,19 @@ const Navbar = () => {
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
   const handleThemeChange = () => setDarkMode(!darkMode);
 
+  const handleLogout = async ()=>{
+    try {
+        const res = await axios.post(`${USER_API_ENDPOINT}/logout` , {} , {withCredentials: true})
+        if(res.data.success){
+            toast.success(res.data.message)
+            dispatch(setUser(null))
+            navigate("/login")
+        }
+    } catch (error) {
+        toast.error(error.response.data.message)
+        console.log(error)
+    }
+  }
   return (
     <nav className="bg-white dark:bg-gray-950   shadow-lg px-6 py-3 flex justify-between items-center">
       {/* Left: Website Name */}
@@ -55,30 +76,36 @@ const Navbar = () => {
         </label>
 
         {/* Profile Picture */}
-        <div className="relative">
-          <img
-            src="https://i.pravatar.cc/40"
-            alt="Profile"
-            className="w-10 h-10 rounded-full cursor-pointer border-2 border-purple-500 dark:border-pink-400"
-            onClick={toggleDropdown}
-          />
-          {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-2 z-50">
-              <Link
-                to="/profile"
-                className="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-              >
-                View Profile
-              </Link>
-              <button
-                className="w-full text-left px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                onClick={() => alert("Logout")}
-              >
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
+        {
+            user?   <div className="relative">
+            <img
+              src="https://i.pravatar.cc/40"
+              alt="Profile"
+              className="w-10 h-10 rounded-full cursor-pointer border-2 border-purple-500 dark:border-pink-400"
+              onClick={toggleDropdown}
+            />
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-2 z-50">
+                <Link
+                  to="/profile"
+                  className="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                >
+                  View Profile
+                </Link>
+                <button
+                  className="w-full text-left px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                  onClick={() => handleLogout()}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>:
+          <Link to={"/login"} className="btn py-1 px-4">
+            Login
+             </Link>
+        }
+      
       </div>
     </nav>
   );
