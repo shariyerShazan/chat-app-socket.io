@@ -8,6 +8,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 import {persistStore} from "redux-persist";
 import { Provider } from 'react-redux'
 import store from './redux/reduxStore'
+import OnlineListener from './hooks/useGetOnlineUsers'
 
 let persist = persistStore(store)
 
@@ -17,6 +18,7 @@ createRoot(document.getElementById('root')).render(
         <PersistGate  loading={null} persistor={persist}>
               <RouterProvider router={Routes} />
               <ToastContainer />
+              <OnlineListener />
         </PersistGate>
     </Provider>
 

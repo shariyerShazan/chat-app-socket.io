@@ -7,6 +7,7 @@ import axios from "axios";
 import { USER_API_ENDPOINT } from "../utils/apiEndpoints";
 import { useDispatch } from "react-redux";
 import { setUser } from "../redux/userSlice";
+import { socket } from "../utils/socket.io";
 
 const Login = () => {
     const dispatch = useDispatch()
@@ -17,26 +18,34 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
-    setBtnLoading(true)
-    const formData = {
-        email,
-        password,
-      };
-
+    setBtnLoading(true);
     e.preventDefault();
+  
+    const formData = { email, password };
+  
     try {
-        const res = await axios.post(`${USER_API_ENDPOINT}/login` , formData , {withCredentials : true})
-        if(res.data.success){
-            setBtnLoading(false)
-            toast.success(res.data.message)
-            dispatch(setUser(res.data.user))
-            navigate("/")
-            e.target.reset()
-        }
+      const res = await axios.post(
+        `${USER_API_ENDPOINT}/login`,
+        formData,
+        { withCredentials: true }
+      );
+  
+      if (res.data.success) {
+        setBtnLoading(false);
+        toast.success(res.data.message);
+        dispatch(setUser(res.data.user));
+  
+        // socket connect
+        socket.connect();
+        socket.emit("join", res.data.user._id); 
+  
+        navigate("/");
+        e.target.reset();
+      }
     } catch (error) {
-        setBtnLoading(false)
-        console.log(error)
-        toast.error(error.response.data.message)
+      setBtnLoading(false);
+      console.log(error);
+      toast.error(error.response.data.message);
     }
   };
 

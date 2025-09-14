@@ -5,7 +5,7 @@ import { NavLink } from "react-router";
 import { motion } from "framer-motion";
 
 const SideBarHome = () => {
-  const { otherUsers } = useSelector((state) => state.user);
+  const { otherUsers, onlineUsers } = useSelector((state) => state.user);
   const { loading, error, refetchOtherUsers } = useGetOtherUsers();
 
   useEffect(() => {
@@ -17,7 +17,7 @@ const SideBarHome = () => {
   return (
     <div className="w-72 h-[93vh] shadow-xl bg-white dark:bg-gray-900 flex flex-col">
       {/* Header */}
-      <div className="py-6.5 shadow-sm  dark:border-gray-700 flex items-center justify-center">
+      <div className="py-6.5 shadow-sm dark:border-gray-700 flex items-center justify-center">
         <h2 className="text-xl text-center font-bold text-gray-800 dark:text-gray-200">
           Chats
         </h2>
@@ -46,41 +46,45 @@ const SideBarHome = () => {
 
         {!loading &&
           !error &&
-          otherUsers?.map((user) => (
-            <NavLink
-              to={`/chats/${user?._id}`}
-              key={user?._id}
-              className={({ isActive }) =>
-                `relative flex items-center gap-3 p-3 cursor-pointer  dark:text-white transition-all ${
-                  isActive
-                    ? "bg-[#ecd3fe] border-l-4 border-l-[#9810fa] dark:bg-[#ecd3fe] dark:!text-black"
-                    : "hover:bg-[#f4eaff] dark:hover:bg-gray-800  border-l-4 border-l-white"
-                }`
-              }
-            >
-              {/* Profile Picture with Active Indicator */}
-              <motion.div
-                initial={{ scale: 0.8 }}
-                whileHover={{ scale: 1.01 }}
-                className="relative"
+          otherUsers?.map((user) => {
+            const isOnline = onlineUsers?.includes(user?._id); 
+
+            return (
+              <NavLink
+                to={`/chats/${user._id}`}
+                key={user._id}
+                className={({ isActive }) =>
+                  `relative flex items-center gap-3 p-3 cursor-pointer dark:text-white transition-all ${
+                    isActive
+                      ? "bg-[#ecd3fe] border-l-4 border-l-[#9810fa] dark:bg-[#ecd3fe] dark:!text-black"
+                      : "hover:bg-[#f4eaff] dark:hover:bg-gray-800 border-l-4 border-l-white"
+                  }`
+                }
               >
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300">
-                  <img
-                    src={user?.profilePicture || "/default-avatar.png"}
-                    alt={user?.fullName}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                {/* Profile Picture with Active Indicator */}
+                <motion.div
+                  initial={{ scale: 0.8 }}
+                  whileHover={{ scale: 1.01 }}
+                  className="relative"
+                >
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300">
+                    <img
+                      src={user?.profilePicture || "/default-avatar.png"}
+                      alt={user?.fullName}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-                {user && (
-                  <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
-                )}
-              </motion.div>
+                  {isOnline && (
+                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
+                  )}
+                </motion.div>
 
-              {/* Name */}
-              <p className="font-medium">{user?.fullName}</p>
-            </NavLink>
-          ))}
+                {/* Name */}
+                <p className="font-medium">{user?.fullName}</p>
+              </NavLink>
+            );
+          })}
       </div>
     </div>
   );

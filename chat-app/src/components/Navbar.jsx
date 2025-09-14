@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router";
 import { USER_API_ENDPOINT } from "../utils/apiEndpoints";
 import { toast } from "react-toastify";
 import { setUser } from "../redux/userSlice";
+import { socket } from "../utils/socket.io";
 
 const Navbar = () => {
     const navigate = useNavigate()
@@ -31,6 +32,7 @@ const Navbar = () => {
     try {
         const res = await axios.post(`${USER_API_ENDPOINT}/logout` , {} , {withCredentials: true})
         if(res.data.success){
+          socket.disconnect()
             toast.success(res.data.message)
             dispatch(setUser(null))
             navigate("/login")
