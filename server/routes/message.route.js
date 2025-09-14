@@ -9,4 +9,4 @@ route.post("/send-message/:userToChatId" , isAuthenticated  , upload.single("ima
 route.get("/get-message/:userToChatId" , isAuthenticated , getMessage)
 route.get("/other-users" , isAuthenticated , getOtherUser)
 
-export default route
+export default route 

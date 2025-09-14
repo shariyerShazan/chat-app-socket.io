@@ -42,7 +42,7 @@ export const getMessage = async (req , res)=>{
                 {senderId: userToChatId , reciverId: req.userId } ,
 
             ]
-         })
+         }).populate("senderId").populate("reciverId")
          if(messages.length === 0){
             return res.status(400).json({
                 messages : "Message not found" ,

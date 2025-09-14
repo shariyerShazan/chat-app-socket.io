@@ -1,52 +1,66 @@
 import axios from 'axios'
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router'
-import { useSelector } from 'react-redux'
-import { useGetChats } from '../hooks/useGetChats'
 import { MESSAGE_API_ENDPOINT, USER_API_ENDPOINT } from '../utils/apiEndpoints'
 
 const Chats = () => {
   const { reciverId } = useParams()
   const [chatUser, setChatUser] = useState(null)
+  const [chats, setChats] = useState([])
   const [text, setText] = useState('')
   const [file, setFile] = useState(null)
   const messagesEndRef = useRef(null)
-
-  const { chats } = useSelector((state) => state.chat)
-  const { refetchChats, loading, error } = useGetChats(reciverId)
 
   // Scroll to bottom whenever chats change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chats])
 
+  // Fetch chats
   useEffect(() => {
-    refetchChats()
-  }, [reciverId])
-
-  const fetchChatUser = async () => {
-    try {
-      const res = await axios.get(`${USER_API_ENDPOINT}/user/${reciverId}`, {
-        withCredentials: true,
-      })
-      if (res.data.success) {
-        setChatUser(res.data.user)
+    const fetchChats = async () => {
+      try {
+        const res = await axios.get(
+          `${MESSAGE_API_ENDPOINT}/get-message/${reciverId}`,
+          { withCredentials: true }
+        )
+        if (res.data.success) {
+          setChats(res.data.chats)
+        } else {
+          setChats([])
+        }
+      } catch (err) {
+        console.log(err)
+        setChats([])
       }
-    } catch (error) {
-      console.log(error)
     }
-  }
 
-  useEffect(() => {
-    fetchChatUser()
+    if (reciverId) fetchChats()
   }, [reciverId])
 
+  // Fetch chat user info
+  useEffect(() => {
+    const fetchChatUser = async () => {
+      try {
+        const res = await axios.get(`${USER_API_ENDPOINT}/user/${reciverId}`, {
+          withCredentials: true,
+        })
+        if (res.data.success) setChatUser(res.data.user)
+      } catch (err) {
+        console.log(err)
+      }
+    }
+
+    if (reciverId) fetchChatUser()
+  }, [reciverId])
+
+  // Send message
   const handleSend = async () => {
-    if (!text && !file) return // যদি কিছু না থাকে তাহলে send না হবে
+    if (!text && !file) return
 
     const formData = new FormData()
     formData.append('text', text)
-    if (file) formData.append('file', file)
+    if (file) formData.append('image', file)
 
     try {
       const res = await axios.post(
@@ -60,10 +74,10 @@ const Chats = () => {
       if (res.data.success) {
         setText('')
         setFile(null)
-        refetchChats()
+        setChats(prev => [...prev, res.data.data]) // নতুন মেসেজ যোগ করা
       }
-    } catch (error) {
-      console.log(error)
+    } catch (err) {
+      console.log(err)
     }
   }
 
@@ -81,26 +95,41 @@ const Chats = () => {
 
       {/* Chat messages */}
       <div className="flex-1 p-4 overflow-y-auto bg-white">
-        {chats?.length === 0 ? (
+        {chats.length === 0 ? (
           <p className="text-center text-gray-400 mt-10">Let's start talking!</p>
         ) : (
-          chats?.map((chat, index) => (
-            <div
-              key={index}
-              className={`flex mb-2 ${
-                chat.senderId === reciverId ? 'justify-start' : 'justify-end'
-              }`}
-            >
-              <div className={`chat ${chat.senderId === reciverId ? 'chat-start' : 'chat-end'}`}>
-                {chat.type === 'text' && <div className="chat-bubble">{chat.message}</div>}
-                {chat.type === 'image' && (
-                  <div className="chat-bubble">
-                    <img src={chat.message} alt="chat" className="max-w-xs rounded-lg" />
+          chats.map((chat, index) => {
+            const isReceiver = chat.senderId._id === reciverId
+            const name = isReceiver ? chat.senderId.fullName : chat.reciverId.fullName
+            const avatar = isReceiver ? chat.senderId.profilePicture : chat.reciverId.profilePicture
+
+            return (
+              <div
+                key={index}
+                className={`flex mb-2 ${isReceiver ? 'justify-start' : 'justify-end'}`}
+              >
+                <div className={`chat ${isReceiver ? 'chat-start' : 'chat-end'}`}>
+                  {/* Profile picture + name */}
+                  <div className={`flex items-center ${isReceiver ? 'flex-row' : 'flex-row-reverse'}`}>
+                    <img src={avatar} alt="avatar" className="w-8 h-8 rounded-full" />
+                    <span className={`text-sm font-semibold mx-2 ${isReceiver ? 'text-left' : 'text-right'}`}>
+                      {name}
+                    </span>
                   </div>
-                )}
+
+                  {/* Message bubble */}
+                  {chat.text && (
+                    <div className="chat-bubble mt-1">{chat.text}</div>
+                  )}
+                  {chat.image && (
+                    <div className="chat-bubble mt-1">
+                      <img src={chat.image} alt="chat" className="max-w-xs rounded-lg" />
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            )
+          })
         )}
         <div ref={messagesEndRef} />
       </div>

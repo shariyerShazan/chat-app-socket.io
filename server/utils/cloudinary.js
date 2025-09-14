@@ -12,14 +12,20 @@ cloudinary.config({
 
 export default cloudinary
 
-export const uploadPhoto = (filePathOrUrl, folder = "photos") => {
-    return new Promise((resolve, reject) => {
-      cloudinary.uploader.upload(filePathOrUrl, { folder }, (error, result) => {
+export const uploadPhoto = (buffer, folder = "photos") => {
+  const base64 = buffer.toString("base64");
+  const dataUri = `data:image/jpeg;base64,${base64}`; 
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload(
+      dataUri,
+      { folder },
+      (error, result) => {
         if (error) return reject(error);
-        resolve(result); 
-      });
-    });
-  };
+        resolve(result);
+      }
+    );
+  });
+};
   
   export const deletePhoto = async (publicId) => {
     try {
