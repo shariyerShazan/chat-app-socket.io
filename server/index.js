@@ -6,8 +6,8 @@ import cors from "cors"
 import connectDB from "./utils/connectDB.js"
 import userRoutes from "./routes/user.route.js"
 import messageRoutes from "./routes/message.route.js"
+import { app , server} from "./utils/socket.io.js"
 
-const app = express()
 
 // middlewares
 app.use(cookieParser())
@@ -44,7 +44,7 @@ const PORT = process.env.PORT || 6002
 const runServer = async ()=>{
      try {
         await connectDB()
-        app.listen(PORT , ()=>{
+        server.listen(PORT , ()=>{
             console.log(`Your server is running at http://localhost:${PORT}`)
         })
      } catch (error) {

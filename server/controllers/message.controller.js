@@ -1,6 +1,7 @@
 import { Message } from "../models/message.model.js";
 import { User } from "../models/user.model.js";
 import { uploadPhoto } from "../utils/cloudinary.js";
+import { getReciverSocketId, io } from "../utils/socket.io.js";
 
 // Get all other users except logged-in user
 export const getOtherUser = async (req, res) => {
@@ -69,7 +70,7 @@ export const sendMessage = async (req, res) => {
       imagePublicId = result.public_id;
     }
 
-    const message = await Message.create({
+    const newMessage = await Message.create({
       senderId: req.userId,
       reciverId,
       text: text || "",
@@ -79,10 +80,22 @@ export const sendMessage = async (req, res) => {
     });
 
     // Populate sender & receiver for frontend
-    await message.populate("senderId", "fullName profilePicture");
-    await message.populate("reciverId", "fullName profilePicture");
+    await newMessage.populate("senderId", "fullName profilePicture");
+    await newMessage.populate("reciverId", "fullName profilePicture");
+    
+    // socket
+    const reciverSocketId = getReciverSocketId(reciverId);
+    if (reciverSocketId && reciverSocketId.length > 0) {
+      // console.log("Receiver sockets:", reciverSocketId);
 
-    return res.status(200).json({ message: "Message sent successfully", success: true, data: message });
+      reciverSocketId.forEach((id) => {
+        io.to(id).emit("newMessage", newMessage);  
+        
+      });
+    }
+
+
+    return res.status(200).json({ message: "Message sent successfully", success: true, data: newMessage });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Internal server error", success: false });

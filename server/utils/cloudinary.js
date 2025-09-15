@@ -12,9 +12,12 @@ cloudinary.config({
 
 export default cloudinary
 
-export const uploadPhoto = (buffer, folder = "photos") => {
+export const uploadPhoto = (file, folder = "photos") => {
+  const mime = file.mimetype; // file type
+  const buffer = Buffer.from(file.buffer); 
   const base64 = buffer.toString("base64");
-  const dataUri = `data:image/jpeg;base64,${base64}`; 
+  const dataUri = `data:${mime};base64,${base64}`;
+
   return new Promise((resolve, reject) => {
     cloudinary.uploader.upload(
       dataUri,
@@ -26,6 +29,8 @@ export const uploadPhoto = (buffer, folder = "photos") => {
     );
   });
 };
+
+
   
   export const deletePhoto = async (publicId) => {
     try {

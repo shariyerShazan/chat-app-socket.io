@@ -149,7 +149,7 @@ export const logout = async (_, res) => {
 export const updateProfile = async (req, res) => {
     try {
       const { fullName, oldPassword, newPassword } = req.body;
-      const user = await User.findById(req.userId); 
+      const user = await User.findById(req.userId).select("+password"); 
       const file = req.file;
   
       if (!user) {
@@ -206,11 +206,11 @@ export const updateProfile = async (req, res) => {
         if (user.profilePhotoPublicId) {
           await deletePhoto(user.profilePhotoPublicId);
         }
-  
+      
         // Upload new photo
-        const result = await uploadPhoto(file.buffer, "profile_photos");
-  
-        user.profilePhoto = result.secure_url;
+        const result = await uploadPhoto(file, "profile_photos");
+        // console.log(result)
+        user.profilePicture = result.secure_url;
         user.profilePhotoPublicId = result.public_id;
       }
   
