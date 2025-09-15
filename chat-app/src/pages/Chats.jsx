@@ -149,7 +149,7 @@ const Chats = () => {
                         className="w-8 h-8 rounded-full border-2 border-gray-300 group-hover:border-blue-400 transition-all"
                       />
                       <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-black text-white text-xs rounded px-1 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        {isSender ? chat.senderId.fullName : chat.reciverId.fullName}
+                        {chat.senderId.fullName}
                       </span>
                      
                     </div>
@@ -178,10 +178,10 @@ const Chats = () => {
   {/* Timestamp: always safe visible on bottom-right corner */}
   <span
     className={`
-      absolute -bottom-10  text-xs px-1 py-[1px] rounded 
+      absolute top-1/2  text-xs px-1 py-[1px] rounded 
       ${isSender 
-        ? "bg-gray-950 text-white dark:bg-white dark:text-black left-0" 
-        : "bg-gray-950 text-white dark:bg-white dark:text-black right-0"}
+        ? "bg-gray-950 text-white dark:bg-white dark:text-black -left-14" 
+        : "bg-gray-950 text-white dark:bg-white dark:text-black -right-14"}
       opacity-0 group-hover:opacity-100 transition-opacity duration-200
     `}
   >
