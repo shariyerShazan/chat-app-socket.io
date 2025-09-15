@@ -21,7 +21,7 @@ const HomePage = () => {
     };
   }, [user?._id]);
 
-  // Click outside to close sidebar
+  // Click outside to close sidebar (small screens)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -38,33 +38,37 @@ const HomePage = () => {
 
   return (
     <div className="flex relative dark:bg-gray-800">
-      {/* Menu Button */}
+      {/* Sidebar */}
+      <div
+        ref={sidebarRef}
+        className={`
+          fixed top-0 right-0 h-full w-64 dark:bg-gray-900 shadow-lg
+          transform transition-transform duration-300 z-40
+          ${sidebarOpen ? "translate-x-0" : "translate-x-full"}
+          md:translate-x-0 md:relative md:flex
+        `}
+      >
+        <SideBarHome />
+      </div>
+
+      {/* Menu Button (only small screens) */}
       <button
-        className="absolute top-4 left-4 z-50 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+        className="fixed top-22 left-4 z-50 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition md:hidden"
         onClick={() => setSidebarOpen((prev) => !prev)}
       >
         <HiMenu size={24} />
       </button>
 
-      {/* Sidebar */}
-      <div
-        ref={sidebarRef}
-        className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-900 shadow-lg transform transition-transform duration-300 z-40
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
-      >
-        <SideBarHome />
-      </div>
-
-      {/* Overlay */}
+      {/* Overlay (small screens) */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black opacity-30 z-30"
+          className="fixed inset-0 bg-black opacity-30 z-30 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Main Content */}
-      <div className="flex-1 ml-0 md:ml-0">
+      <div className="flex-1 ml-0  transition-all duration-300">
         <Outlet />
       </div>
     </div>

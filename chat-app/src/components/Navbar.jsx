@@ -1,20 +1,23 @@
 import axios from "axios";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import { USER_API_ENDPOINT } from "../utils/apiEndpoints";
 import { toast } from "react-toastify";
 import { setUser } from "../redux/userSlice";
 import { socket } from "../utils/socket.io";
+import { HiOutlineChat, HiOutlineUser, HiOutlineLogout } from "react-icons/hi";
 
 const Navbar = () => {
-    const navigate = useNavigate()
-    const dispatch = useDispatch()
-    const {user} = useSelector((state)=> state.user)
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.user);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(
     localStorage.getItem("darkMode") === "true" || false
   );
+
+  const dropdownRef = useRef();
 
   useEffect(() => {
     if (darkMode) {
@@ -25,27 +28,43 @@ const Navbar = () => {
     localStorage.setItem("darkMode", darkMode);
   }, [darkMode]);
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
   const handleThemeChange = () => setDarkMode(!darkMode);
 
-  const handleLogout = async ()=>{
+  const handleLogout = async () => {
     try {
-        const res = await axios.post(`${USER_API_ENDPOINT}/logout` , {} , {withCredentials: true})
-        if(res.data.success){
-          socket.disconnect()
-            toast.success(res.data.message)
-            dispatch(setUser(null))
-            navigate("/login")
-        }
+      const res = await axios.post(
+        `${USER_API_ENDPOINT}/logout`,
+        {},
+        { withCredentials: true }
+      );
+      if (res.data.success) {
+        socket.disconnect();
+        toast.success(res.data.message);
+        dispatch(setUser(null));
+        navigate("/login");
+      }
     } catch (error) {
-        toast.error(error.response.data.message)
-        console.log(error)
+      toast.error(error.response?.data?.message || "Something went wrong");
+      console.log(error);
     }
-  }
+  };
+
   return (
-    <nav className="bg-white dark:bg-gray-950 border-b-2 border-b-[#9810fa]  shadow-lg px-6 py-3 flex justify-between items-center">
+    <nav className="bg-white dark:bg-gray-950 border-b-2 border-b-[#9810fa] shadow-lg px-6 py-3 flex justify-between items-center">
       {/* Left: Website Name */}
-      <div className="text-2xl font-bold text-purple-600  dark:text-pink-400">
+      <div className="text-2xl font-bold text-purple-600 dark:text-pink-400">
         Chatty
       </div>
 
@@ -53,12 +72,7 @@ const Navbar = () => {
       <div className="flex items-center gap-4 relative">
         {/* Dark/Light Mode Toggle */}
         <label className="swap swap-rotate cursor-pointer">
-          <input
-            type="checkbox"
-            checked={darkMode}
-            onChange={handleThemeChange}
-          />
-          {/* Sun icon */}
+          <input type="checkbox" checked={darkMode} onChange={handleThemeChange} />
           <svg
             className="swap-off h-8 w-8 fill-current text-yellow-500"
             xmlns="http://www.w3.org/2000/svg"
@@ -67,7 +81,6 @@ const Navbar = () => {
             <path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z" />
           </svg>
 
-          {/* Moon icon */}
           <svg
             className="swap-on h-8 w-8 fill-current text-gray-800 dark:text-gray-200"
             xmlns="http://www.w3.org/2000/svg"
@@ -77,37 +90,43 @@ const Navbar = () => {
           </svg>
         </label>
 
-        {/* Profile Picture */}
-        {
-            user?   <div className="relative">
+        {/* Profile Dropdown */}
+        {user ? (
+          <div className="relative" ref={dropdownRef}>
             <img
-              src="https://i.pravatar.cc/40"
+              src={user.profilePicture}
               alt="Profile"
-              className="w-10 h-10 rounded-full cursor-pointer border-2 border-purple-500 dark:border-pink-400"
+              className="w-10 h-10 object-cover rounded-full cursor-pointer border-2 border-purple-500 dark:border-pink-400"
               onClick={toggleDropdown}
             />
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-2 z-50">
+              <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-2 z-50">
+                <Link
+                  to="/"
+                  className="flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                >
+                  <HiOutlineChat /> Chat
+                </Link>
                 <Link
                   to="/profile"
-                  className="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                  className="flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                 >
-                  View Profile
+                  <HiOutlineUser /> Profile
                 </Link>
                 <button
-                  className="w-full text-left px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                  onClick={() => handleLogout()}
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                 >
-                  Logout
+                  <HiOutlineLogout /> Logout
                 </button>
               </div>
             )}
-          </div>:
+          </div>
+        ) : (
           <Link to={"/login"} className="btn py-1 px-4">
             Login
-             </Link>
-        }
-      
+          </Link>
+        )}
       </div>
     </nav>
   );

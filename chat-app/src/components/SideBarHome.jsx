@@ -15,7 +15,7 @@ const SideBarHome = () => {
   const skeletonArray = Array(5).fill(0);
 
   return (
-    <div className="w-72 h-[93vh] shadow-xl bg-white dark:bg-gray-900 flex flex-col">
+    <div className="w-72 sm:h-[93vh] h-full shadow-xl bg-white dark:bg-gray-900 flex flex-col">
       {/* Header */}
       <div className="py-6.5 shadow-sm dark:border-gray-700 flex items-center justify-center">
         <h2 className="text-xl text-center font-bold text-gray-800 dark:text-gray-200">
@@ -57,7 +57,7 @@ const SideBarHome = () => {
                   `relative flex items-center gap-3 p-3 cursor-pointer dark:text-white transition-all ${
                     isActive
                       ? "bg-[#ecd3fe] border-l-4 border-l-[#9810fa] dark:bg-[#ecd3fe] dark:!text-black"
-                      : "hover:bg-[#f4eaff] dark:hover:bg-gray-800 border-l-4 border-l-white"
+                      : "hover:bg-[#f4eaff] dark:hover:bg-gray-800 border-l-4 dark:border-l-white "
                   }`
                 }
               >
@@ -67,7 +67,7 @@ const SideBarHome = () => {
                   whileHover={{ scale: 1.01 }}
                   className="relative"
                 >
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300">
+                  <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-300">
                     <img
                       src={user?.profilePicture || "/default-avatar.png"}
                       alt={user?.fullName}
@@ -76,12 +76,15 @@ const SideBarHome = () => {
                   </div>
 
                   {isOnline && (
-                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
+                    <span className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
                   )}
                 </motion.div>
 
                 {/* Name */}
-                <p className="font-medium">{user?.fullName}</p>
+               <div>
+               <p className="font-medium text-lg">{user?.fullName}</p>
+               { isOnline ? <p className="text-sm font-thin">(Online)</p>: <p className="text-sm font-thin">(Offile)</p> }
+               </div>
               </NavLink>
             );
           })}

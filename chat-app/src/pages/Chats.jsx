@@ -148,7 +148,7 @@ const Chats = () => {
                       <img
                         src={avatar}
                         alt="avatar"
-                        className="w-8 h-8 rounded-full border-2 border-gray-300 group-hover:border-blue-400 transition-all"
+                        className="w-8 h-8 object-cover rounded-full border-2 border-gray-300 group-hover:border-blue-400 transition-all"
                       />
                       <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-black text-white text-xs rounded px-1 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                         {chat.senderId.fullName}
@@ -232,7 +232,7 @@ const Chats = () => {
         <input
           type="file"
           accept="image/*"
-          className="file-input w-32 sm:w-fit file-input-bordered"
+          className="file-input w-32 md:w-fit file-input-bordered"
           onChange={(e) => setFile(e.target.files[0])}
         />
         <button className="btn btn-primary px-4 py-2" onClick={handleSend}>
