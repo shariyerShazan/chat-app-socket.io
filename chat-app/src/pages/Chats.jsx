@@ -232,7 +232,7 @@ const Chats = () => {
         <input
           type="file"
           accept="image/*"
-          className="file-input file-input-bordered"
+          className="file-input w-32 sm:w-fit file-input-bordered"
           onChange={(e) => setFile(e.target.files[0])}
         />
         <button className="btn btn-primary px-4 py-2" onClick={handleSend}>
