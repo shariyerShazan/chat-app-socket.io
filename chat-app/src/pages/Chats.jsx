@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MESSAGE_API_ENDPOINT, USER_API_ENDPOINT } from "../utils/apiEndpoints";
 import ChatSkeleton from "../components/ChatSkeleton";
 import { RxCross2 } from "react-icons/rx";
+import { useGetRealTimeMessage } from "../hooks/useGetRealTimeMessage";
 
 const Chats = () => {
   const { reciverId } = useParams();
@@ -17,6 +18,7 @@ const Chats = () => {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
+  useGetRealTimeMessage(setChats)
   // Scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
