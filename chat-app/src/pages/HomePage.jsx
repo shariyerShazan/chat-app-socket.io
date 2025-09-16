@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import SideBarHome from "../components/SideBarHome";
-import { Outlet } from "react-router";
+import { Outlet} from "react-router";
 import { useSelector } from "react-redux";
 import { socket } from "../utils/socket.io";
 import { HiMenu } from "react-icons/hi";
 
 const HomePage = () => {
+ 
   const { user } = useSelector((state) => state.user);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef();
