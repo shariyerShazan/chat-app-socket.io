@@ -1,8 +1,11 @@
 import React from 'react'
-import { Outlet } from 'react-router'
+import { Outlet} from 'react-router'
 import Navbar from '../components/Navbar'
+// import { useSelector } from 'react-redux'
 
 const MainLayout = () => {
+ 
+  
   return (
     <div>
         <Navbar />

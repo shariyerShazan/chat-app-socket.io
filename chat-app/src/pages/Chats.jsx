@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { MESSAGE_API_ENDPOINT, USER_API_ENDPOINT } from "../utils/apiEndpoints";
@@ -17,6 +17,7 @@ const Chats = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+
 
   useGetRealTimeMessage(setChats)
   // Scroll to bottom
