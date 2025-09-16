@@ -7,6 +7,7 @@ import Register from "../pages/Register";
 import Profile from "../pages/Profile";
 import Chats from "../pages/chats";
 import ChatHome from "../pages/ChatHome";
+import PrivateRoute from "./PrivateRoute";
 
 export const Routes = createBrowserRouter([
     {
@@ -16,15 +17,26 @@ export const Routes = createBrowserRouter([
         children : [
             {
                 path: "/" ,
-                 element: <HomePage />,
+                 element: 
+              
+                        <HomePage />
+      
+                 ,
                  children: [
                     {
                         path : "/" ,
-                        element: <ChatHome />
+                        element:
+                        <PrivateRoute>
+                         <ChatHome />
+                         </PrivateRoute>
                     },
                     {
                         path : "chats/:reciverId" ,
-                        element: <Chats />
+                        element: 
+                        <PrivateRoute>
+                               <Chats />
+                         </PrivateRoute>
+                  
                     }
                  ]
             },
@@ -38,7 +50,10 @@ export const Routes = createBrowserRouter([
             },
             {
                 path: "profile" ,
-                element: <Profile />
+                element:
+                <PrivateRoute>
+                      <Profile />
+         </PrivateRoute> 
             }
         ]
     }
